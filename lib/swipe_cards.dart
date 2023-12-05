@@ -6,6 +6,22 @@ import 'package:swipe_cards/draggable_card.dart';
 import 'package:swipe_cards/profile_card.dart';
 
 class SwipeCards extends StatefulWidget {
+  SwipeCards({
+    Key? key,
+    required this.matchEngine,
+    required this.onStackFinished,
+    required this.itemBuilder,
+    this.cardBuilder,
+    this.likeTag,
+    this.nopeTag,
+    this.superLikeTag,
+    this.fillSpace = true,
+    this.upSwipeAllowed = false,
+    this.leftSwipeAllowed = true,
+    this.rightSwipeAllowed = true,
+    this.itemChanged,
+  }) : super(key: key);
+
   final IndexedWidgetBuilder itemBuilder;
   final Widget? likeTag;
   final Widget? nopeTag;
@@ -17,21 +33,7 @@ class SwipeCards extends StatefulWidget {
   final bool upSwipeAllowed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
-
-  SwipeCards({
-    Key? key,
-    required this.matchEngine,
-    required this.onStackFinished,
-    required this.itemBuilder,
-    this.likeTag,
-    this.nopeTag,
-    this.superLikeTag,
-    this.fillSpace = true,
-    this.upSwipeAllowed = false,
-    this.leftSwipeAllowed = true,
-    this.rightSwipeAllowed = true,
-    this.itemChanged,
-  }) : super(key: key);
+  final DraggableCardWrapper cardBuilder;
 
   @override
   _SwipeCardsState createState() => _SwipeCardsState();
@@ -194,6 +196,7 @@ class _SwipeCardsState extends State<SwipeCards> {
             card: _buildFrontCard(),
             likeTag: widget.likeTag,
             nopeTag: widget.nopeTag,
+            cardBuilder: widget.cardBuilder,
             superLikeTag: widget.superLikeTag,
             slideTo: _desiredSlideOutDirection(),
             onSlideUpdate: _onSlideUpdate,

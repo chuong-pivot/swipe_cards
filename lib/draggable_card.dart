@@ -7,8 +7,33 @@ enum SlideDirection { left, right, up }
 
 enum SlideRegion { inNopeRegion, inLikeRegion, inSuperLikeRegion }
 
+typedef DraggableCardWrapper = Widget? Function(
+  bool isDragging,
+  Offset? cardOffsetPercent,
+  Widget? child,
+)?;
+
 class DraggableCard extends StatefulWidget {
+  DraggableCard({
+    this.card,
+    this.cardBuilder,
+    this.likeTag,
+    this.nopeTag,
+    this.superLikeTag,
+    this.isDraggable = true,
+    this.onSlideUpdate,
+    this.onSlideOutComplete,
+    this.slideTo,
+    this.onSlideRegionUpdate,
+    this.upSwipeAllowed = false,
+    this.leftSwipeAllowed = true,
+    this.rightSwipeAllowed = true,
+    this.isBackCard = false,
+    this.padding = EdgeInsets.zero,
+  });
+
   final Widget? card;
+  final DraggableCardWrapper cardBuilder;
   final Widget? likeTag;
   final Widget? nopeTag;
   final Widget? superLikeTag;
@@ -23,22 +48,6 @@ class DraggableCard extends StatefulWidget {
   final EdgeInsets padding;
   final bool isBackCard;
 
-  DraggableCard(
-      {this.card,
-      this.likeTag,
-      this.nopeTag,
-      this.superLikeTag,
-      this.isDraggable = true,
-      this.onSlideUpdate,
-      this.onSlideOutComplete,
-      this.slideTo,
-      this.onSlideRegionUpdate,
-      this.upSwipeAllowed = false,
-      this.leftSwipeAllowed = true,
-      this.rightSwipeAllowed = true,
-      this.isBackCard = false,
-      this.padding = EdgeInsets.zero});
-
   @override
   _DraggableCardState createState() => _DraggableCardState();
 }
@@ -47,6 +56,7 @@ class _DraggableCardState extends State<DraggableCard>
     with TickerProviderStateMixin {
   GlobalKey profileCardKey = GlobalKey(debugLabel: 'profile_card_key');
   Offset? cardOffset = const Offset(0.0, 0.0);
+  Offset? cardOffsetPercent = const Offset(0.0, 0.0);
   Offset? dragStart;
   Offset? dragPosition;
   Offset? slideBackStart;
@@ -55,6 +65,7 @@ class _DraggableCardState extends State<DraggableCard>
   late AnimationController slideBackAnimation;
   Tween<Offset>? slideOutTween;
   late AnimationController slideOutAnimation;
+  bool isDragging = false;
 
   RenderBox? box;
   var topLeft, bottomRight;
@@ -66,7 +77,7 @@ class _DraggableCardState extends State<DraggableCard>
   void initState() {
     super.initState();
     slideBackAnimation = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     )
       ..addListener(() => setState(() {
@@ -76,11 +87,11 @@ class _DraggableCardState extends State<DraggableCard>
               Curves.elasticOut.transform(slideBackAnimation.value),
             );
 
-            if (null != widget.onSlideUpdate) {
+            if (widget.onSlideUpdate != null) {
               widget.onSlideUpdate!(cardOffset!.distance);
             }
 
-            if (null != widget.onSlideRegionUpdate) {
+            if (widget.onSlideRegionUpdate != null) {
               widget.onSlideRegionUpdate!(slideRegion);
             }
           }))
@@ -205,11 +216,20 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.45;
-    final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.45;
-    final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.40;
+    final widthPercent = cardOffset!.dx / context.size!.width;
+    final heightPercent = cardOffset!.dy / context.size!.height;
+
+    final isInLeftRegion = widthPercent < -0.45;
+    final isInRightRegion = widthPercent > 0.45;
+    final isInTopRegion = heightPercent < -0.40;
 
     setState(() {
+      cardOffsetPercent = Offset(widthPercent, heightPercent);
+
+      if (!isDragging && cardOffset != Offset.zero) {
+        isDragging = true;
+      }
+
       if (isInLeftRegion || isInRightRegion) {
         slideRegion = isInLeftRegion
             ? SlideRegion.inNopeRegion
@@ -236,11 +256,13 @@ class _DraggableCardState extends State<DraggableCard>
   void _onPanEnd(DragEndDetails details) {
     final dragVector = cardOffset! / cardOffset!.distance;
 
-    final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.15;
-    final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.15;
-    final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.15;
+    final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.3;
+    final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.3;
+    final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.3;
 
     setState(() {
+      isDragging = false;
+
       if (isInLeftRegion) {
         if (widget.leftSwipeAllowed) {
           slideOutTween = Tween(
@@ -287,14 +309,13 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   double _rotation(Rect? dragBounds) {
-    if (dragStart != null) {
-      final rotationCornerMultiplier =
-          dragStart!.dy >= dragBounds!.top + (dragBounds.height / 2) ? -1 : 1;
+    if (dragStart != null && dragBounds != null) {
+      final rotationCornerMultiplier = 1;
       return (pi / 8) *
           (cardOffset!.dx / dragBounds.width) *
           rotationCornerMultiplier;
     } else {
-      return 0.0;
+      return 0;
     }
   }
 
@@ -305,6 +326,8 @@ class _DraggableCardState extends State<DraggableCard>
       return const Offset(0.0, 0.0);
     }
   }
+
+  static const secondary600 = Color(0xff60748B);
 
   @override
   Widget build(BuildContext context) {
@@ -320,6 +343,16 @@ class _DraggableCardState extends State<DraggableCard>
       cardOffset = Offset.zero;
     }
 
+    var card = widget.card;
+
+    if (widget.cardBuilder != null) {
+      card = widget.cardBuilder!(
+        isDragging,
+        cardOffsetPercent,
+        card,
+      );
+    }
+
     return Transform(
       transform: Matrix4.translationValues(cardOffset!.dx, cardOffset!.dy, 0.0)
         ..rotateZ(_rotation(anchorBounds)),
@@ -333,39 +366,7 @@ class _DraggableCardState extends State<DraggableCard>
           onPanStart: _onPanStart,
           onPanUpdate: _onPanUpdate,
           onPanEnd: _onPanEnd,
-          child: widget.card != null
-              ? Stack(
-                  children: [
-                    widget.card!,
-                    if (widget.likeTag != null &&
-                        slideRegion == SlideRegion.inLikeRegion)
-                      Positioned(
-                        top: 40,
-                        left: 20,
-                        child: Transform.rotate(
-                          angle: 12,
-                          child: widget.likeTag,
-                        ),
-                      ),
-                    if (widget.nopeTag != null &&
-                        slideRegion == SlideRegion.inNopeRegion)
-                      Positioned(
-                        top: 40,
-                        right: 20,
-                        child: Transform.rotate(
-                          angle: -12,
-                          child: widget.nopeTag,
-                        ),
-                      ),
-                    if (widget.superLikeTag != null &&
-                        slideRegion == SlideRegion.inSuperLikeRegion)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: widget.superLikeTag,
-                      ),
-                  ],
-                )
-              : Container(),
+          child: card ?? Container(),
         ),
       ),
     );
