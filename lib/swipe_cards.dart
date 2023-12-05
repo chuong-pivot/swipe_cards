@@ -11,7 +11,7 @@ class SwipeCards extends StatefulWidget {
     required this.matchEngine,
     required this.onStackFinished,
     required this.itemBuilder,
-    this.cardBuilder,
+    this.currentCardBuilder,
     this.fillSpace = true,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
@@ -25,7 +25,7 @@ class SwipeCards extends StatefulWidget {
   final bool fillSpace;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
-  final DraggableCardWrapper cardBuilder;
+  final DraggableCardWrapper currentCardBuilder;
 
   @override
   _SwipeCardsState createState() => _SwipeCardsState();
@@ -180,7 +180,7 @@ class _SwipeCardsState extends State<SwipeCards> {
         if (widget.matchEngine.currentItem != null)
           DraggableCard(
             card: _buildFrontCard(),
-            cardBuilder: widget.cardBuilder,
+            cardBuilder: widget.currentCardBuilder,
             slideTo: _desiredSlideOutDirection(),
             onSlideUpdate: _onSlideUpdate,
             onSlideRegionUpdate: _onSlideRegion,
@@ -199,9 +199,7 @@ class MatchEngine extends ChangeNotifier {
   int? _currentItemIndex;
   int? _nextItemIndex;
 
-  MatchEngine({
-    List<SwipeItem>? swipeItems,
-  }) : _swipeItems = swipeItems {
+  MatchEngine({List<SwipeItem>? swipeItems}) : _swipeItems = swipeItems {
     _currentItemIndex = 0;
     _nextItemIndex = 1;
   }
@@ -234,7 +232,7 @@ class MatchEngine extends ChangeNotifier {
   }
 }
 
-class SwipeItem<T> extends ChangeNotifier {
+class SwipeItem extends ChangeNotifier {
   SwipeItem({
     required this.value,
     this.likeAction,
@@ -242,7 +240,7 @@ class SwipeItem<T> extends ChangeNotifier {
     this.onSlideUpdate,
   });
 
-  final T value;
+  final dynamic value;
   final Function? likeAction;
   final Function? nopeAction;
   final Future Function(SlideRegion? slideRegion)? onSlideUpdate;
