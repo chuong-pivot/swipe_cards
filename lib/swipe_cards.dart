@@ -12,9 +12,6 @@ class SwipeCards extends StatefulWidget {
     required this.onStackFinished,
     required this.itemBuilder,
     this.cardBuilder,
-    this.likeTag,
-    this.nopeTag,
-    this.superLikeTag,
     this.fillSpace = true,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
@@ -22,9 +19,6 @@ class SwipeCards extends StatefulWidget {
   }) : super(key: key);
 
   final IndexedWidgetBuilder itemBuilder;
-  final Widget? likeTag;
-  final Widget? nopeTag;
-  final Widget? superLikeTag;
   final MatchEngine matchEngine;
   final Function onStackFinished;
   final Function(SwipeItem, int)? itemChanged;
@@ -186,10 +180,7 @@ class _SwipeCardsState extends State<SwipeCards> {
         if (widget.matchEngine.currentItem != null)
           DraggableCard(
             card: _buildFrontCard(),
-            likeTag: widget.likeTag,
-            nopeTag: widget.nopeTag,
             cardBuilder: widget.cardBuilder,
-            superLikeTag: widget.superLikeTag,
             slideTo: _desiredSlideOutDirection(),
             onSlideUpdate: _onSlideUpdate,
             onSlideRegionUpdate: _onSlideRegion,
@@ -243,21 +234,19 @@ class MatchEngine extends ChangeNotifier {
   }
 }
 
-class SwipeItem extends ChangeNotifier {
-  final dynamic content;
-  final Function? likeAction;
-  final Function? superlikeAction;
-  final Function? nopeAction;
-  final Future Function(SlideRegion? slideRegion)? onSlideUpdate;
-  Decision decision = Decision.undecided;
-
+class SwipeItem<T> extends ChangeNotifier {
   SwipeItem({
-    this.content,
+    required this.value,
     this.likeAction,
-    this.superlikeAction,
     this.nopeAction,
     this.onSlideUpdate,
   });
+
+  final T value;
+  final Function? likeAction;
+  final Function? nopeAction;
+  final Future Function(SlideRegion? slideRegion)? onSlideUpdate;
+  Decision decision = Decision.undecided;
 
   void slideUpdateAction(SlideRegion? slideRegion) async {
     try {
@@ -286,16 +275,6 @@ class SwipeItem extends ChangeNotifier {
     }
   }
 
-  void superLike() {
-    if (decision == Decision.undecided) {
-      decision = Decision.superLike;
-      try {
-        superlikeAction?.call();
-      } catch (e) {}
-      notifyListeners();
-    }
-  }
-
   void resetMatch() {
     if (decision != Decision.undecided) {
       decision = Decision.undecided;
@@ -304,4 +283,4 @@ class SwipeItem extends ChangeNotifier {
   }
 }
 
-enum Decision { undecided, nope, like, superLike }
+enum Decision { undecided, nope, like }

@@ -17,9 +17,6 @@ class DraggableCard extends StatefulWidget {
   DraggableCard({
     this.card,
     this.cardBuilder,
-    this.likeTag,
-    this.nopeTag,
-    this.superLikeTag,
     this.isDraggable = true,
     this.onSlideUpdate,
     this.onSlideOutComplete,
@@ -33,9 +30,6 @@ class DraggableCard extends StatefulWidget {
 
   final Widget? card;
   final DraggableCardWrapper cardBuilder;
-  final Widget? likeTag;
-  final Widget? nopeTag;
-  final Widget? superLikeTag;
   final bool isDraggable;
   final SlideDirection? slideTo;
   final Function(double distance)? onSlideUpdate;

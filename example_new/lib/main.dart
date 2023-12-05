@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < _names.length; i++) {
       _swipeItems.add(
         SwipeItem(
-          content: Content(text: _names[i], color: _colors[i]),
+          value: Content(text: _names[i], color: _colors[i]),
           likeAction: () {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text("Liked ${_names[i]}"),
@@ -74,12 +74,6 @@ class _MyHomePageState extends State<MyHomePage> {
           nopeAction: () {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text("Nope ${_names[i]}"),
-              duration: Duration(milliseconds: 500),
-            ));
-          },
-          superlikeAction: () {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Superliked ${_names[i]}"),
               duration: Duration(milliseconds: 500),
             ));
           },
@@ -142,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   border: Border.all(),
                 ),
                 child: Text(
-                  _swipeItems[index].content.text,
+                  _swipeItems[index].value.text,
                   style: TextStyle(fontSize: 100),
                 ),
               );
@@ -154,31 +148,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ));
             },
             itemChanged: (SwipeItem item, int index) {
-              print("item: ${item.content.text}, index: $index");
+              print("item: ${item.value.text}, index: $index");
             },
             leftSwipeAllowed: true,
             rightSwipeAllowed: true,
             fillSpace: true,
-            likeTag: Container(
-              margin: const EdgeInsets.all(15.0),
-              padding: const EdgeInsets.all(3.0),
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.green)),
-              child: Text('Like'),
-            ),
-            nopeTag: Container(
-              margin: const EdgeInsets.all(15.0),
-              padding: const EdgeInsets.all(3.0),
-              decoration: BoxDecoration(border: Border.all(color: Colors.red)),
-              child: Text('Nope'),
-            ),
-            superLikeTag: Container(
-              margin: const EdgeInsets.all(15.0),
-              padding: const EdgeInsets.all(3.0),
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.orange)),
-              child: Text('Super Like'),
-            ),
           ),
         ));
   }
