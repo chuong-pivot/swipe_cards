@@ -9,6 +9,7 @@ enum SlideRegion { inNopeRegion, inLikeRegion }
 
 typedef DraggableCardWrapper = Widget? Function(
   bool isDragging,
+  Offset? cardOffset,
   Offset? cardOffsetPercent,
   Widget? child,
 )?;
@@ -310,6 +311,7 @@ class _DraggableCardState extends State<DraggableCard>
     if (widget.cardBuilder != null) {
       card = widget.cardBuilder!(
         isDragging,
+        cardOffset,
         cardOffsetPercent,
         card,
       );
