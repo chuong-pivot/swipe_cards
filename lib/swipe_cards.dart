@@ -16,7 +16,6 @@ class SwipeCards extends StatefulWidget {
     this.nopeTag,
     this.superLikeTag,
     this.fillSpace = true,
-    this.upSwipeAllowed = false,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
     this.itemChanged,
@@ -30,7 +29,6 @@ class SwipeCards extends StatefulWidget {
   final Function onStackFinished;
   final Function(SwipeItem, int)? itemChanged;
   final bool fillSpace;
-  final bool upSwipeAllowed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
   final DraggableCardWrapper cardBuilder;
@@ -145,9 +143,6 @@ class _SwipeCardsState extends State<SwipeCards> {
       case SlideDirection.right:
         currentMatch?.like();
         break;
-      case SlideDirection.up:
-        currentMatch?.superLike();
-        break;
       case null:
         break;
     }
@@ -170,8 +165,6 @@ class _SwipeCardsState extends State<SwipeCards> {
         return SlideDirection.left;
       case Decision.like:
         return SlideDirection.right;
-      case Decision.superLike:
-        return SlideDirection.up;
       default:
         return null;
     }
@@ -186,7 +179,6 @@ class _SwipeCardsState extends State<SwipeCards> {
           DraggableCard(
             isDraggable: false,
             card: _buildBackCard(),
-            upSwipeAllowed: widget.upSwipeAllowed,
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
             isBackCard: true,
@@ -202,7 +194,6 @@ class _SwipeCardsState extends State<SwipeCards> {
             onSlideUpdate: _onSlideUpdate,
             onSlideRegionUpdate: _onSlideRegion,
             onSlideOutComplete: _onSlideOutComplete,
-            upSwipeAllowed: widget.upSwipeAllowed,
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
             isBackCard: false,

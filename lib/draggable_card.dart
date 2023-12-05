@@ -3,9 +3,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-enum SlideDirection { left, right, up }
+enum SlideDirection { left, right }
 
-enum SlideRegion { inNopeRegion, inLikeRegion, inSuperLikeRegion }
+enum SlideRegion { inNopeRegion, inLikeRegion }
 
 typedef DraggableCardWrapper = Widget? Function(
   bool isDragging,
@@ -25,7 +25,6 @@ class DraggableCard extends StatefulWidget {
     this.onSlideOutComplete,
     this.slideTo,
     this.onSlideRegionUpdate,
-    this.upSwipeAllowed = false,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
     this.isBackCard = false,
@@ -42,7 +41,6 @@ class DraggableCard extends StatefulWidget {
   final Function(double distance)? onSlideUpdate;
   final Function(SlideRegion? slideRegion)? onSlideRegionUpdate;
   final Function(SlideDirection? direction)? onSlideOutComplete;
-  final bool upSwipeAllowed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
   final EdgeInsets padding;
@@ -77,14 +75,14 @@ class _DraggableCardState extends State<DraggableCard>
   void initState() {
     super.initState();
     slideBackAnimation = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     )
       ..addListener(() => setState(() {
             cardOffset = Offset.lerp(
               slideBackStart,
               const Offset(0.0, 0.0),
-              Curves.elasticOut.transform(slideBackAnimation.value),
+              Curves.easeOut.transform(slideBackAnimation.value),
             );
 
             if (widget.onSlideUpdate != null) {
@@ -153,9 +151,6 @@ class _DraggableCardState extends State<DraggableCard>
         case SlideDirection.right:
           _slideRight();
           break;
-        case SlideDirection.up:
-          _slideUp();
-          break;
       }
     }
   }
@@ -197,16 +192,6 @@ class _DraggableCardState extends State<DraggableCard>
     });
   }
 
-  void _slideUp() async {
-    await Future.delayed(Duration(milliseconds: 1)).then((_) {
-      final screenHeight = context.size!.height;
-      dragStart = _chooseRandomDragStart();
-      slideOutTween = Tween(
-          begin: const Offset(0.0, 0.0), end: Offset(0.0, -2 * screenHeight));
-      slideOutAnimation.forward(from: 0.0);
-    });
-  }
-
   void _onPanStart(DragStartDetails details) {
     dragStart = details.globalPosition;
 
@@ -221,7 +206,6 @@ class _DraggableCardState extends State<DraggableCard>
 
     final isInLeftRegion = widthPercent < -0.45;
     final isInRightRegion = widthPercent > 0.45;
-    final isInTopRegion = heightPercent < -0.40;
 
     setState(() {
       cardOffsetPercent = Offset(widthPercent, heightPercent);
@@ -234,8 +218,6 @@ class _DraggableCardState extends State<DraggableCard>
         slideRegion = isInLeftRegion
             ? SlideRegion.inNopeRegion
             : SlideRegion.inLikeRegion;
-      } else if (isInTopRegion) {
-        slideRegion = SlideRegion.inSuperLikeRegion;
       } else {
         slideRegion = null;
       }
@@ -258,7 +240,6 @@ class _DraggableCardState extends State<DraggableCard>
 
     final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.3;
     final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.3;
-    final isInTopRegion = (cardOffset!.dy / context.size!.height) < -0.3;
 
     setState(() {
       isDragging = false;
@@ -281,17 +262,6 @@ class _DraggableCardState extends State<DraggableCard>
           slideOutAnimation.forward(from: 0.0);
 
           slideOutDirection = SlideDirection.right;
-        } else {
-          slideBackStart = cardOffset;
-          slideBackAnimation.forward(from: 0.0);
-        }
-      } else if (isInTopRegion) {
-        if (widget.upSwipeAllowed) {
-          slideOutTween = Tween(
-              begin: cardOffset, end: dragVector * (2 * context.size!.height));
-          slideOutAnimation.forward(from: 0.0);
-
-          slideOutDirection = SlideDirection.up;
         } else {
           slideBackStart = cardOffset;
           slideBackAnimation.forward(from: 0.0);
@@ -326,8 +296,6 @@ class _DraggableCardState extends State<DraggableCard>
       return const Offset(0.0, 0.0);
     }
   }
-
-  static const secondary600 = Color(0xff60748B);
 
   @override
   Widget build(BuildContext context) {

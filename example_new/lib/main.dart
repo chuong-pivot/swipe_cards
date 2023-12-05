@@ -115,8 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 shadowOffset = (-cardOffsetPercent.dx * 15).clamp(-8, 8);
               }
 
-              print(shadowOffset);
-
               return AnimatedContainer(
                 duration: Duration(milliseconds: 100),
                 decoration: BoxDecoration(
@@ -160,7 +158,6 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             leftSwipeAllowed: true,
             rightSwipeAllowed: true,
-            upSwipeAllowed: true,
             fillSpace: true,
             likeTag: Container(
               margin: const EdgeInsets.all(15.0),
