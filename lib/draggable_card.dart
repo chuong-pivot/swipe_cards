@@ -205,11 +205,14 @@ class _DraggableCardState extends State<DraggableCard>
 
   void _onPanUpdate(DragUpdateDetails details) {
     final widthPercent = cardOffset!.dx / context.size!.width;
+    final heightPercent = cardOffset!.dy / context.size!.height;
 
     final isInLeftRegion = widthPercent < -0.45;
     final isInRightRegion = widthPercent > 0.45;
 
     setState(() {
+      cardOffsetPercent = Offset(widthPercent, heightPercent);
+
       if (!isDragging && cardOffset != Offset.zero) {
         isDragging = true;
       }
