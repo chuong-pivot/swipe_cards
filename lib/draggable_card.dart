@@ -80,6 +80,10 @@ class _DraggableCardState extends State<DraggableCard>
               Curves.easeOut.transform(slideBackAnimation.value),
             );
 
+            final widthPercent = cardOffset!.dx / context.size!.width;
+            final heightPercent = cardOffset!.dy / context.size!.height;
+            cardOffsetPercent = Offset(widthPercent, heightPercent);
+
             if (widget.onSlideUpdate != null) {
               widget.onSlideUpdate!(cardOffset!.distance);
             }
@@ -105,6 +109,10 @@ class _DraggableCardState extends State<DraggableCard>
       ..addListener(() {
         setState(() {
           cardOffset = slideOutTween!.evaluate(slideOutAnimation);
+
+          final widthPercent = cardOffset!.dx / context.size!.width;
+          final heightPercent = cardOffset!.dy / context.size!.height;
+          cardOffsetPercent = Offset(widthPercent, heightPercent);
 
           if (null != widget.onSlideUpdate) {
             widget.onSlideUpdate!(cardOffset!.distance);
@@ -197,14 +205,11 @@ class _DraggableCardState extends State<DraggableCard>
 
   void _onPanUpdate(DragUpdateDetails details) {
     final widthPercent = cardOffset!.dx / context.size!.width;
-    final heightPercent = cardOffset!.dy / context.size!.height;
 
     final isInLeftRegion = widthPercent < -0.45;
     final isInRightRegion = widthPercent > 0.45;
 
     setState(() {
-      cardOffsetPercent = Offset(widthPercent, heightPercent);
-
       if (!isDragging && cardOffset != Offset.zero) {
         isDragging = true;
       }
