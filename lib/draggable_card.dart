@@ -335,9 +335,9 @@ class _DraggableCardState extends State<DraggableCard>
         height: anchorBounds?.height,
         padding: widget.padding,
         child: GestureDetector(
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          onPanEnd: _onPanEnd,
+          onHorizontalDragStart: _onPanStart,
+          onHorizontalDragUpdate: _onPanUpdate,
+          onHorizontalDragEnd: _onPanEnd,
           child: card ?? Container(),
         ),
       ),
