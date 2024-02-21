@@ -347,7 +347,7 @@ class _DraggableCardState extends State<DraggableCard>
                   ..onUpdate = _onPanUpdate
                   ..onEnd = _onPanEnd;
               },
-            )
+            ),
           },
           child: card ?? Container(),
         ),
@@ -375,8 +375,8 @@ class _DraggableCardState extends State<DraggableCard>
 }
 
 class AllowMultipleGestureRecognizer extends PanGestureRecognizer {
-  @override
-  void rejectGesture(int pointer) {
-    acceptGesture(pointer);
-  }
+  // @override
+  // void rejectGesture(int pointer) {
+  //   acceptGesture(pointer);
+  // }
 }
