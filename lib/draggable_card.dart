@@ -337,11 +337,11 @@ class _DraggableCardState extends State<DraggableCard>
         padding: widget.padding,
         child: RawGestureDetector(
           gestures: {
-            AllowMultipleGestureRecognizer:
+            HighPriorityPanGestureRecognizer:
                 GestureRecognizerFactoryWithHandlers<
-                    AllowMultipleGestureRecognizer>(
-              () => AllowMultipleGestureRecognizer(),
-              (AllowMultipleGestureRecognizer instance) {
+                    HighPriorityPanGestureRecognizer>(
+              () => HighPriorityPanGestureRecognizer(),
+              (HighPriorityPanGestureRecognizer instance) {
                 instance
                   ..onStart = _onPanStart
                   ..onUpdate = _onPanUpdate
@@ -374,9 +374,10 @@ class _DraggableCardState extends State<DraggableCard>
   }
 }
 
-class AllowMultipleGestureRecognizer extends PanGestureRecognizer {
-  // @override
-  // void rejectGesture(int pointer) {
-  //   acceptGesture(pointer);
-  // }
+class HighPriorityPanGestureRecognizer extends PanGestureRecognizer {
+  @override
+  void addPointer(PointerDownEvent event) {
+    super.addPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
 }
