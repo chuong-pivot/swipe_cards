@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 enum SlideDirection { left, right }
@@ -334,10 +335,20 @@ class _DraggableCardState extends State<DraggableCard>
         width: anchorBounds?.width,
         height: anchorBounds?.height,
         padding: widget.padding,
-        child: GestureDetector(
-          onHorizontalDragStart: _onPanStart,
-          onHorizontalDragUpdate: _onPanUpdate,
-          onHorizontalDragEnd: _onPanEnd,
+        child: RawGestureDetector(
+          gestures: {
+            AllowMultipleGestureRecognizer:
+                GestureRecognizerFactoryWithHandlers<
+                    AllowMultipleGestureRecognizer>(
+              () => AllowMultipleGestureRecognizer(),
+              (AllowMultipleGestureRecognizer instance) {
+                instance
+                  ..onStart = _onPanStart
+                  ..onUpdate = _onPanUpdate
+                  ..onEnd = _onPanEnd;
+              },
+            )
+          },
           child: card ?? Container(),
         ),
       ),
@@ -360,5 +371,12 @@ class _DraggableCardState extends State<DraggableCard>
     setState(() {
       isAnchorInitialized = true;
     });
+  }
+}
+
+class AllowMultipleGestureRecognizer extends PanGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
   }
 }
