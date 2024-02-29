@@ -212,6 +212,8 @@ class MatchEngine extends ChangeNotifier {
       ? _swipeItems![_nextItemIndex!]
       : null;
 
+  List<SwipeItem>? get items => _swipeItems;
+
   int? get currentIndex => _currentItemIndex;
 
   int? get nextIndex => _nextItemIndex;
