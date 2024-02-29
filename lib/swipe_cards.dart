@@ -212,6 +212,10 @@ class MatchEngine extends ChangeNotifier {
       ? _swipeItems![_nextItemIndex!]
       : null;
 
+  int? get currentIndex => _currentItemIndex;
+
+  int? get nextIndex => _nextItemIndex;
+
   void cycleMatch() {
     if (currentItem!.decision != Decision.undecided) {
       currentItem!.resetMatch();
