@@ -376,8 +376,11 @@ class _DraggableCardState extends State<DraggableCard>
 
 class HighPriorityPanGestureRecognizer extends PanGestureRecognizer {
   @override
-  void addPointer(PointerDownEvent event) {
-    super.addPointer(event);
-    resolve(GestureDisposition.accepted);
+  void handleEvent(PointerEvent event) {
+    if (event is PointerMoveEvent) {
+      resolve(GestureDisposition.accepted);
+    }
+
+    super.handleEvent(event);
   }
 }
