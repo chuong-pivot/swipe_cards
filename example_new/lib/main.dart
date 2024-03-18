@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             itemBuilder: (BuildContext context, int index) {
               return GestureDetector(
                 onTap: () {
-                  print('tapped');
+                  print('TAPPPED');
                 },
                 child: Container(
                   alignment: Alignment.center,

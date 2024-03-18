@@ -375,10 +375,24 @@ class _DraggableCardState extends State<DraggableCard>
 }
 
 class HighPriorityPanGestureRecognizer extends PanGestureRecognizer {
+  var pastEvent;
+  Timer? timer;
+
   @override
   void handleEvent(PointerEvent event) {
-    if (event is PointerMoveEvent) {
-      resolve(GestureDisposition.accepted);
+    if (pastEvent != event.runtimeType) {
+      if (pastEvent is PointerMoveEvent && timer != null) {
+        timer!.cancel();
+      }
+
+      pastEvent = event.runtimeType;
+
+      if (pastEvent is PointerMoveEvent) {
+        timer = Timer(
+          Duration(milliseconds: 50),
+          () => resolve(GestureDisposition.accepted),
+        );
+      }
     }
 
     super.handleEvent(event);
