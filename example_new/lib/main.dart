@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
           height: MediaQuery.of(context).size.height - kToolbarHeight,
           child: SwipeCards(
             matchEngine: _matchEngine!,
-            onCardPressed: () {
+            onCardPressed: (index) {
               print('TAPPED');
             },
             currentCardBuilder: (isDragging, _, cardOffsetPercent, child) {

@@ -27,7 +27,7 @@ class SwipeCards extends StatefulWidget {
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
   final DraggableCardWrapper currentCardBuilder;
-  final Function()? onCardPressed;
+  final Function(int index)? onCardPressed;
 
   @override
   _SwipeCardsState createState() => _SwipeCardsState();
@@ -185,7 +185,8 @@ class _SwipeCardsState extends State<SwipeCards> {
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
             isBackCard: false,
-            onCardPressed: widget.onCardPressed,
+            onCardPressed: () =>
+                widget.onCardPressed?.call(widget.matchEngine.currentIndex!),
           )
       ],
     );
