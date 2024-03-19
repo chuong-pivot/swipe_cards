@@ -16,6 +16,7 @@ class SwipeCards extends StatefulWidget {
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
     this.itemChanged,
+    this.onCardPressed,
   }) : super(key: key);
 
   final IndexedWidgetBuilder itemBuilder;
@@ -26,6 +27,7 @@ class SwipeCards extends StatefulWidget {
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
   final DraggableCardWrapper currentCardBuilder;
+  final Function()? onCardPressed;
 
   @override
   _SwipeCardsState createState() => _SwipeCardsState();
@@ -95,23 +97,6 @@ class _SwipeCardsState extends State<SwipeCards> {
     });
   }
 
-  Widget _buildFrontCard() {
-    return ProfileCard(
-      child: widget.itemBuilder(context, widget.matchEngine._currentItemIndex!),
-      key: _frontCard,
-    );
-  }
-
-  Widget _buildBackCard() {
-    return Transform(
-      transform: Matrix4.identity()..scale(_nextCardScale, _nextCardScale),
-      alignment: Alignment.center,
-      child: ProfileCard(
-        child: widget.itemBuilder(context, widget.matchEngine._nextItemIndex!),
-      ),
-    );
-  }
-
   void _onSlideUpdate(double distance) {
     setState(() {
       _nextCardScale = 0.9 + (0.1 * (distance / 100.0)).clamp(0.0, 0.1);
@@ -172,14 +157,26 @@ class _SwipeCardsState extends State<SwipeCards> {
         if (widget.matchEngine.nextItem != null)
           DraggableCard(
             isDraggable: false,
-            card: _buildBackCard(),
+            card: Transform(
+              transform: Matrix4.identity()
+                ..scale(_nextCardScale, _nextCardScale),
+              alignment: Alignment.center,
+              child: ProfileCard(
+                child: widget.itemBuilder(
+                    context, widget.matchEngine._nextItemIndex!),
+              ),
+            ),
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
             isBackCard: true,
           ),
         if (widget.matchEngine.currentItem != null)
           DraggableCard(
-            card: _buildFrontCard(),
+            card: ProfileCard(
+              child: widget.itemBuilder(
+                  context, widget.matchEngine._currentItemIndex!),
+              key: _frontCard,
+            ),
             cardBuilder: widget.currentCardBuilder,
             slideTo: _desiredSlideOutDirection(),
             onSlideUpdate: _onSlideUpdate,
@@ -188,6 +185,7 @@ class _SwipeCardsState extends State<SwipeCards> {
             leftSwipeAllowed: widget.leftSwipeAllowed,
             rightSwipeAllowed: widget.rightSwipeAllowed,
             isBackCard: false,
+            onCardPressed: widget.onCardPressed,
           )
       ],
     );

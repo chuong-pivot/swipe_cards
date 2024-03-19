@@ -100,6 +100,9 @@ class _MyHomePageState extends State<MyHomePage> {
           height: MediaQuery.of(context).size.height - kToolbarHeight,
           child: SwipeCards(
             matchEngine: _matchEngine!,
+            onCardPressed: () {
+              print('TAPPED');
+            },
             currentCardBuilder: (isDragging, _, cardOffsetPercent, child) {
               final cardX = cardOffsetPercent?.dx ?? 0;
               var shadowOffset = 8.0;
@@ -129,20 +132,15 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
             itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: () {
-                  print('TAPPPED');
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(),
-                  ),
-                  child: Text(
-                    _swipeItems[index].value.text,
-                    style: TextStyle(fontSize: 100),
-                  ),
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(),
+                ),
+                child: Text(
+                  _swipeItems[index].value.text,
+                  style: TextStyle(fontSize: 100),
                 ),
               );
             },

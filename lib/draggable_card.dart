@@ -21,9 +21,10 @@ class DraggableCard extends StatefulWidget {
     this.cardBuilder,
     this.isDraggable = true,
     this.onSlideUpdate,
-    this.onSlideOutComplete,
     this.slideTo,
+    this.onSlideOutComplete,
     this.onSlideRegionUpdate,
+    this.onCardPressed,
     this.leftSwipeAllowed = true,
     this.rightSwipeAllowed = true,
     this.isBackCard = false,
@@ -37,6 +38,7 @@ class DraggableCard extends StatefulWidget {
   final Function(double distance)? onSlideUpdate;
   final Function(SlideRegion? slideRegion)? onSlideRegionUpdate;
   final Function(SlideDirection? direction)? onSlideOutComplete;
+  final Function()? onCardPressed;
   final bool leftSwipeAllowed;
   final bool rightSwipeAllowed;
   final EdgeInsets padding;
@@ -259,6 +261,8 @@ class _DraggableCardState extends State<DraggableCard>
           slideBackStart = cardOffset;
           slideBackAnimation.forward(from: 0.0);
         }
+
+        timer?.cancel();
       } else if (isInRightRegion) {
         if (widget.rightSwipeAllowed) {
           slideOutTween = Tween(
@@ -270,6 +274,8 @@ class _DraggableCardState extends State<DraggableCard>
           slideBackStart = cardOffset;
           slideBackAnimation.forward(from: 0.0);
         }
+
+        timer?.cancel();
       } else {
         slideBackStart = cardOffset;
         slideBackAnimation.forward(from: 0.0);
@@ -300,6 +306,8 @@ class _DraggableCardState extends State<DraggableCard>
       return const Offset(0.0, 0.0);
     }
   }
+
+  Timer? timer;
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +353,18 @@ class _DraggableCardState extends State<DraggableCard>
                 instance
                   ..onStart = _onPanStart
                   ..onUpdate = _onPanUpdate
-                  ..onEnd = _onPanEnd;
+                  ..onDown = (details) {
+                    timer?.cancel();
+                    timer = Timer(Duration(milliseconds: 100), () {});
+                  }
+                  ..onEnd = (details) {
+                    _onPanEnd(details);
+
+                    if (timer?.isActive ?? false) {
+                      timer?.cancel();
+                      widget.onCardPressed?.call();
+                    }
+                  };
               },
             ),
           },
@@ -375,24 +394,10 @@ class _DraggableCardState extends State<DraggableCard>
 }
 
 class HighPriorityPanGestureRecognizer extends PanGestureRecognizer {
-  var pastEvent;
-  Timer? timer;
-
   @override
   void handleEvent(PointerEvent event) {
-    if (pastEvent != event.runtimeType) {
-      if (pastEvent is PointerMoveEvent && timer != null) {
-        timer!.cancel();
-      }
-
-      pastEvent = event.runtimeType;
-
-      if (pastEvent is PointerMoveEvent) {
-        timer = Timer(
-          Duration(milliseconds: 50),
-          () => resolve(GestureDisposition.accepted),
-        );
-      }
+    if (event is PointerMoveEvent) {
+      resolve(GestureDisposition.accepted);
     }
 
     super.handleEvent(event);
