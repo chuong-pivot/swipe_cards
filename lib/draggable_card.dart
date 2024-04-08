@@ -51,8 +51,9 @@ class DraggableCard extends StatefulWidget {
 class _DraggableCardState extends State<DraggableCard>
     with TickerProviderStateMixin {
   GlobalKey profileCardKey = GlobalKey(debugLabel: 'profile_card_key');
-  Offset? cardOffset = const Offset(0.0, 0.0);
-  Offset? cardOffsetPercent = const Offset(0.0, 0.0);
+  var cardOffset = Offset.zero;
+  var cardOffsetPercent = Offset.zero;
+
   Offset? dragStart;
   Offset? dragPosition;
   Offset? slideBackStart;
@@ -78,22 +79,22 @@ class _DraggableCardState extends State<DraggableCard>
     )
       ..addListener(() => setState(() {
             cardOffset = Offset.lerp(
-              slideBackStart,
-              const Offset(0.0, 0.0),
-              Curves.easeOut.transform(slideBackAnimation.value),
-            );
+                  slideBackStart,
+                  Offset.zero,
+                  Curves.easeOut.transform(slideBackAnimation.value),
+                ) ??
+                Offset.zero;
 
-            final widthPercent = cardOffset!.dx / context.size!.width;
-            final heightPercent = cardOffset!.dy / context.size!.height;
+            final size = context.size;
+
+            if (size == null) return;
+
+            final widthPercent = cardOffset.dx / size.width;
+            final heightPercent = cardOffset.dy / size.height;
             cardOffsetPercent = Offset(widthPercent, heightPercent);
 
-            if (widget.onSlideUpdate != null) {
-              widget.onSlideUpdate!(cardOffset!.distance);
-            }
-
-            if (widget.onSlideRegionUpdate != null) {
-              widget.onSlideRegionUpdate!(slideRegion);
-            }
+            widget.onSlideUpdate?.call(cardOffset.distance);
+            widget.onSlideRegionUpdate?.call(slideRegion);
           }))
       ..addStatusListener((AnimationStatus status) {
         if (status == AnimationStatus.completed) {
@@ -111,19 +112,18 @@ class _DraggableCardState extends State<DraggableCard>
     )
       ..addListener(() {
         setState(() {
-          cardOffset = slideOutTween!.evaluate(slideOutAnimation);
+          cardOffset =
+              slideOutTween?.evaluate(slideOutAnimation) ?? Offset.zero;
+          final size = context.size;
 
-          final widthPercent = cardOffset!.dx / context.size!.width;
-          final heightPercent = cardOffset!.dy / context.size!.height;
+          if (size == null) return;
+
+          final widthPercent = cardOffset.dx / size.width;
+          final heightPercent = cardOffset.dy / size.height;
           cardOffsetPercent = Offset(widthPercent, heightPercent);
 
-          if (null != widget.onSlideUpdate) {
-            widget.onSlideUpdate!(cardOffset!.distance);
-          }
-
-          if (null != widget.onSlideRegionUpdate) {
-            widget.onSlideRegionUpdate!(slideRegion);
-          }
+          widget.onSlideUpdate?.call(cardOffset.distance);
+          widget.onSlideRegionUpdate?.call(slideRegion);
         });
       })
       ..addStatusListener((AnimationStatus status) {
@@ -133,9 +133,7 @@ class _DraggableCardState extends State<DraggableCard>
             dragPosition = null;
             slideOutTween = null;
 
-            if (widget.onSlideOutComplete != null) {
-              widget.onSlideOutComplete!(slideOutDirection);
-            }
+            widget.onSlideOutComplete?.call(slideOutDirection);
           });
         }
       });
@@ -145,8 +143,8 @@ class _DraggableCardState extends State<DraggableCard>
   void didUpdateWidget(DraggableCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.card!.key != oldWidget.card!.key) {
-      cardOffset = const Offset(0.0, 0.0);
+    if (widget.card?.key != oldWidget.card?.key) {
+      cardOffset = Offset.zero;
     }
 
     if (oldWidget.slideTo == null && widget.slideTo != null) {
@@ -169,31 +167,40 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   Offset _chooseRandomDragStart() {
-    final cardContext = profileCardKey.currentContext!;
-    final cardTopLeft = (cardContext.findRenderObject() as RenderBox)
-        .localToGlobal(const Offset(0.0, 0.0));
+    final cardContext = profileCardKey.currentContext;
+    final cardTopLeft = (cardContext?.findRenderObject() as RenderBox?)
+        ?.localToGlobal(Offset.zero);
+
+    final size = cardContext?.size;
+    if (cardTopLeft == null || size == null) return Offset.zero;
+
     final dragStartY =
-        cardContext.size!.height * (Random().nextDouble() < 0.5 ? 0.25 : 0.75) +
+        size.height * (Random().nextDouble() < 0.5 ? 0.25 : 0.75) +
             cardTopLeft.dy;
-    return Offset(cardContext.size!.width / 2 + cardTopLeft.dx, dragStartY);
+    return Offset(size.width / 2 + cardTopLeft.dx, dragStartY);
   }
 
   void _slideLeft() async {
     await Future.delayed(Duration(milliseconds: 1)).then((_) {
-      final screenWidth = context.size!.width;
+      final size = context.size ?? Size.zero;
+
+      final screenWidth = size.width;
       dragStart = _chooseRandomDragStart();
-      slideOutTween = Tween(
-          begin: const Offset(0.0, 0.0), end: Offset(-2 * screenWidth, 0.0));
+      slideOutTween =
+          Tween(begin: Offset.zero, end: Offset(-2 * screenWidth, 0.0));
       slideOutAnimation.forward(from: 0.0);
     });
   }
 
   void _slideRight() async {
     await Future.delayed(Duration(milliseconds: 1)).then((_) {
-      final screenWidth = context.size!.width;
+      final size = context.size;
+      if (size == null) return;
+
+      final screenWidth = size.width;
       dragStart = _chooseRandomDragStart();
-      slideOutTween = Tween(
-          begin: const Offset(0.0, 0.0), end: Offset(2 * screenWidth, 0.0));
+      slideOutTween =
+          Tween(begin: Offset.zero, end: Offset(2 * screenWidth, 0.0));
       slideOutAnimation.forward(from: 0.0);
     });
   }
@@ -207,8 +214,10 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    final widthPercent = cardOffset!.dx / context.size!.width;
-    final heightPercent = cardOffset!.dy / context.size!.height;
+    final size = context.size ?? Size.zero;
+
+    final widthPercent = cardOffset.dx / size.width;
+    final heightPercent = cardOffset.dy / size.height;
 
     final isInLeftRegion = widthPercent < -0.45;
     final isInRightRegion = widthPercent > 0.45;
@@ -229,31 +238,30 @@ class _DraggableCardState extends State<DraggableCard>
       }
 
       dragPosition = details.globalPosition;
-      cardOffset = dragPosition! - dragStart!;
+      if (dragPosition != null && dragStart != null) {
+        cardOffset = dragPosition! - dragStart!;
 
-      if (null != widget.onSlideUpdate) {
-        widget.onSlideUpdate!(cardOffset!.distance);
-      }
-
-      if (null != widget.onSlideRegionUpdate) {
-        widget.onSlideRegionUpdate!(slideRegion);
+        widget.onSlideUpdate?.call(cardOffset.distance);
+        widget.onSlideRegionUpdate?.call(slideRegion);
       }
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
-    final dragVector = cardOffset! / cardOffset!.distance;
+    final size = context.size ?? Size.zero;
 
-    final isInLeftRegion = (cardOffset!.dx / context.size!.width) < -0.3;
-    final isInRightRegion = (cardOffset!.dx / context.size!.width) > 0.3;
+    final dragVector = cardOffset / cardOffset.distance;
+
+    final isInLeftRegion = (cardOffset.dx / size.width) < -0.3;
+    final isInRightRegion = (cardOffset.dx / size.width) > 0.3;
 
     setState(() {
       isDragging = false;
 
       if (isInLeftRegion) {
         if (widget.leftSwipeAllowed) {
-          slideOutTween = Tween(
-              begin: cardOffset, end: dragVector * (2 * context.size!.width));
+          slideOutTween =
+              Tween(begin: cardOffset, end: dragVector * (2 * size.width));
           slideOutAnimation.forward(from: 0.0);
 
           slideOutDirection = SlideDirection.left;
@@ -265,8 +273,8 @@ class _DraggableCardState extends State<DraggableCard>
         timer?.cancel();
       } else if (isInRightRegion) {
         if (widget.rightSwipeAllowed) {
-          slideOutTween = Tween(
-              begin: cardOffset, end: dragVector * (2 * context.size!.width));
+          slideOutTween =
+              Tween(begin: cardOffset, end: dragVector * (2 * size.width));
           slideOutAnimation.forward(from: 0.0);
 
           slideOutDirection = SlideDirection.right;
@@ -282,9 +290,8 @@ class _DraggableCardState extends State<DraggableCard>
       }
 
       slideRegion = null;
-      if (null != widget.onSlideRegionUpdate) {
-        widget.onSlideRegionUpdate!(slideRegion);
-      }
+
+      widget.onSlideRegionUpdate?.call(slideRegion);
     });
   }
 
@@ -292,7 +299,7 @@ class _DraggableCardState extends State<DraggableCard>
     if (dragStart != null && dragBounds != null) {
       final rotationCornerMultiplier = 1;
       return (pi / 8) *
-          (cardOffset!.dx / dragBounds.width) *
+          (cardOffset.dx / dragBounds.width) *
           rotationCornerMultiplier;
     } else {
       return 0;
@@ -300,10 +307,10 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   Offset _rotationOrigin(Rect? dragBounds) {
-    if (dragStart != null) {
-      return dragStart! - dragBounds!.topLeft;
+    if (dragStart != null && dragBounds != null) {
+      return dragStart! - dragBounds.topLeft;
     } else {
-      return const Offset(0.0, 0.0);
+      return Offset.zero;
     }
   }
 
@@ -319,7 +326,7 @@ class _DraggableCardState extends State<DraggableCard>
     // issue that fast swipes cause the back card not loading
     if (widget.isBackCard &&
         anchorBounds != null &&
-        cardOffset!.dx < anchorBounds!.height) {
+        cardOffset.dx < anchorBounds!.height) {
       cardOffset = Offset.zero;
     }
 
@@ -335,7 +342,7 @@ class _DraggableCardState extends State<DraggableCard>
     }
 
     return Transform(
-      transform: Matrix4.translationValues(cardOffset!.dx, cardOffset!.dy, 0.0)
+      transform: Matrix4.translationValues(cardOffset.dx, cardOffset.dy, 0.0)
         ..rotateZ(_rotation(anchorBounds)),
       origin: _rotationOrigin(anchorBounds),
       child: Container(
@@ -377,9 +384,9 @@ class _DraggableCardState extends State<DraggableCard>
   _initAnchor() async {
     await Future.delayed(Duration(milliseconds: 3));
     box = context.findRenderObject() as RenderBox?;
-    topLeft = box!.size.topLeft(box!.localToGlobal(const Offset(0.0, 0.0)));
-    bottomRight =
-        box!.size.bottomRight(box!.localToGlobal(const Offset(0.0, 0.0)));
+    final boxPos = box?.localToGlobal(Offset.zero) ?? Offset.zero;
+    topLeft = box?.size.topLeft(boxPos);
+    bottomRight = box?.size.bottomRight(boxPos);
     anchorBounds = new Rect.fromLTRB(
       topLeft.dx,
       topLeft.dy,
